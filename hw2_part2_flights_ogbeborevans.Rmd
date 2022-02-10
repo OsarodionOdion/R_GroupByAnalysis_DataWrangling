@@ -1,0 +1,268 @@
+---
+title: "HW2 part 2 - EDA with R - Group by analysis"
+author: "isken"
+date: "2022-01-09"
+output: html_document
+---
+
+Step 0 - Familiarize yourself with the data and the problem
+---------------------------------------------------------------
+
+In this part of the assignment you'll do some basic exploratory data analysis
+with R on a dataset about airline flights out of Detroit Metropolitan
+Airport. See the README.md file (it's just a plain text file with markdown in it) for details about the data file. 
+
+As we did in class, you'll be creating an R Markdown document to
+both prepare a dataset and do some analysis as well as to document the
+steps you did (and answer some questions I'll throw at you).
+
+You'll notice a few "Hacker Extra Credit" tasks
+thrown in. These are for those of you who want to go a little above and beyond
+and attempt some more challenging tasks. And, feel free to do a some free form
+Hacker Extra style work yourself - in other words, do something beyond what
+was asked. You'll learn more.
+
+Step 1 - Create a new R Markdown document
+-----------------------------------------
+
+Create a new R Markdown document and name it **hw2_part2_flights_[_your last name_].Rmd**. Mine would
+be called **hw2_part2_flights_isken.Rmd**. Save it into the same folder as this file. 
+
+This will be your working directory. 
+
+Create a new R Project based on this working directory.
+
+Step 2 - Complete the following R tasks
+---------------------------------------
+
+Now you'll need to complete the following tasks in R. Just like we did in class, you should
+use a combination of markdown text (be concise, no need to write tons of text) to explain what you are doing and R code chunks to actually do it.
+When you are done, use the "Knit HTML" button to generate an HTML file from your R Markdown.
+You'll be submitting BOTH the completed R Markdown file as well as the generated HTML file. 
+
+
+### Task 1 - Load data and load libraries
+
+You'll need a few libraries.
+
+```{r message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+```
+
+Let's read the data into a `data.frame` named `flights`. 
+
+```{r readflights}
+flights <- read.csv("data/ontime_flights_DTW.csv")
+
+```
+
+### Task 2: Use `str` and `summary` to get a quick overview of the dataset
+
+Look at the data types. Check for NAs. Look at the summary stats and note any
+potential issues with the data.
+
+```{r}
+str(flights)
+summary(flights)
+
+```
+**QUESTION** What datatype did the `FlightDate` field take on?
+
+> Character data type
+
+
+
+**QUESTION** Just from looking at the output of the `summary()` command, what percentage of the flights were cancelled? 
+ 
+> 0.01841 or 1.841%
+
+It looks like most of the numeric fields have 200-300 NAs. However, as you might
+have already guessed, this is primarily due to the cancelled flights. So, get
+rid of all the rows in which cancelled is equal to 1. Use `summary` after doing this to confirm that the rows are gone (or use some other method to confirm
+that you've gotten rid of the cancelled flights).
+
+```{r remove_cancelled_flights}
+flights_actual <- filter(flights, Cancelled == 0)
+flights_actual
+```
+
+
+
+#### Fix the FlightDate field
+
+If the FlightDate field was interpeted as a factor or a character, then convert it to
+a POSIXct date type. After doing this, use the `str` function to show that your
+change was successful and show the first 20 rows of the updated field.
+
+A few suggestions:
+
+- Don't try to change the field type in place until you know for sure your approach works. Do the conversion into a new field instead until you know your approach works.
+- help() is useful
+
+```{r fix_FlightDate}
+
+```
+
+```{r show_FlightDate}
+
+
+```
+
+
+
+
+### Task 3: Preliminary group by analysis for DepartureDelay.
+
+Our primary variable of interest for this analysis is `DepartureDelay` Use `dplyr` to create outputs that will help you explore the following questions. 
+
+#### Q 3.1 - by destination
+
+How many flights are there to each destination? 
+
+```{r flights_by_dest}
+
+```
+
+
+What is mean `DepartureDelay` by `Destination`? Sort the results descending by the mean delay.
+
+```{r mean_dep_delay_by_dest}
+
+```
+
+
+Now return the count, mean, 50th, and 95th percentile of
+`DepartureDelay` by Destination. Store the result in a `data.frame` called
+`ddelay_summary`. Use `head` and `tail` to show the top and bottom few records
+from `ddelay_summary`.
+
+```{r ddelay_stats}
+#ddelay_summary <- flights %>% 
+# ...  
+
+head(ddelay_summary)
+tail(ddelay_summary)
+```
+
+
+#### Q 3.2 - by carrier and destination
+
+Now find the 10 carrier, destination pairs having the highest median departure delay.
+
+```{r q32}
+
+
+```
+
+
+**HACKER EXTRA CREDIT** Repeat the above query but only include carrier, destination pairs having at least 25 flights. Sort descending by mean departure delay.
+
+```{r q32_hackerxtra}
+
+```
+
+
+### Task 4: Engineer new features to facilitate time of day analysis
+
+As anyone who flies knows, the time of day of the flight can certainly have
+an impact on departure delays - or does it?. You'll notice that there is a `DepartureTime`
+field in the `flights` dataframe. However, it's a 4 digit integer representing
+time of day using a 24 hour format. For example, 1420 is 2:20pm. So, you'd like
+to do analysis of DepartureDelay by the hour of day associated with the `DepartureTime`.
+For `DepartureTime`=1420, the `DepartureHour` would be 14. 
+
+You should first create your own 
+function in R called  `time.to.hour` that takes an integer time like `DepartureTime` 
+and returns the integer hour associated with that time. Write the function directly
+in a code chunk in your R Markdown document.
+
+```{r time_to_hour}
+#time.to.hour <- 
+
+```
+
+
+Then Create a new field called DepartureHour containing which is populated by using
+your function as shown below.
+
+```{r departure_hour_soln}
+
+```
+
+
+
+In addition, you decide that you'd like to create a "coarser" version called 
+DeparturePeriod. The values of this new variable are as follows:
+
+1. DepartureHour in [6,12]
+2. DepartureHour in [13,18]
+3. DepartureHour in [19,23]
+4. DepartureHour in [0,5]
+
+See http://www.cookbook-r.com/Manipulating_data/Recoding_data/ for ideas. After
+creating the DeparturePeriod field, makes sure you convert if to a factor it
+it's not already.
+
+```{r departure_period}
+
+```
+
+
+
+Now add a day of week field. Look into the `lubridate` library as it might be helpful.
+
+```{r dow}
+#flights$DayOfWeek <- 
+```
+
+
+
+
+### Task 5: Do group by analysis on DeparturePeriod.
+
+Are departure delays related to `DeparturePeriod`? Start by computing basic summary
+statistics for `DepartureDelay` by `DeparturePeriod`. Of course you already know how to
+do this from previous questions in this assignment. Use `dplyr`.
+
+```{r delays_by_period_soln}
+
+
+```
+
+
+> PUT YOUR SUMMARY COMMENTS HERE
+
+
+
+
+### Task 6: Some exploratory plots
+
+Now you'll create a few plots to help visualize this dataset. Use the ggplot2 package.
+You are primarity interested in finding relationships between `DepartureDelay` and other variables in the dataset. Create at least three plots.
+
+You'd also like to create two bar charts:
+
+* bars representing the count of flights for each `Carrier`
+* bars representing the mean departure delay for each `Carrier`.
+
+**HACKER EXTRA CREDIT** In either bar chart, figure out how to sort the bars so that the largest bar is the first one, the second largest bar is the second one, and so on.
+
+
+
+### Task 7: Save flights to an .Rdata file
+
+Since you've added some new fields to `flights` save it to an Rdata file that goes inside of the `data` subfolder. 
+You'll be submitting this file. Name it flights_*yourlastname*.rdata. 
+
+```{r save}
+
+```
+
+
+
+
+## Deliverables for this problem
+
+Make sure you knit your Rmd file. IMPORTANT: You might notice that there's a file with the same base name as your file and with a .nb.html extension. The "nb" stands for "notebook" and that file is created on the fly as you are working in your notebook. DO NOT SUBMIT THAT FILE. YOU MUST DO A "knit to html" from the toolbar which will generate a file with just the .html extension. As discussed earlier, if you have errors, your document won't knit. Comment out error lines and put a comment in saying that you couldn't get the code chunk to work. After your file is knitted into an html file, simply create a compressed archive (either tar.gz or .zip) of your project folder and upload the compressed archive file into Moodle.
