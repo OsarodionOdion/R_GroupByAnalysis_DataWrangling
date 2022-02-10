@@ -86,6 +86,8 @@ that you've gotten rid of the cancelled flights).
 ```{r remove_cancelled_flights}
 flights_actual <- filter(flights, Cancelled == 0)
 flights_actual
+flights <- flights_actual
+
 ```
 
 
@@ -102,11 +104,15 @@ A few suggestions:
 - help() is useful
 
 ```{r fix_FlightDate}
-
+flights$timestamp <- as.POSIXct(as.Date(flights$FlightDate, "%m/%d/%y"))
+str (flights$timestamp)
+flights$FlightDate <- flights$timestamp
+flights <- subset (flights, select = -timestamp)
 ```
 
 ```{r show_FlightDate}
-
+str(flights$FlightDate)
+head(flights, 20)
 
 ```
 
@@ -122,6 +128,8 @@ Our primary variable of interest for this analysis is `DepartureDelay` Use `dply
 How many flights are there to each destination? 
 
 ```{r flights_by_dest}
+by_dest <- group_by(flights, dest)
+summarize(by_dest, num_flights = n())
 
 ```
 
