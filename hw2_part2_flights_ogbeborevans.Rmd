@@ -128,8 +128,7 @@ Our primary variable of interest for this analysis is `DepartureDelay` Use `dply
 How many flights are there to each destination? 
 
 ```{r flights_by_dest}
-by_dest <- group_by(flights, dest)
-summarize(by_dest, num_flights = n())
+summarize(group_by(flights, Destination), num_flights = n())
 
 ```
 
@@ -137,6 +136,8 @@ summarize(by_dest, num_flights = n())
 What is mean `DepartureDelay` by `Destination`? Sort the results descending by the mean delay.
 
 ```{r mean_dep_delay_by_dest}
+summarize(group_by(flights, Destination), mean_delay = mean(DepartureDelay, na.rm = TRUE))%>%
+  arrange(desc(mean_delay))
 
 ```
 
@@ -147,8 +148,14 @@ Now return the count, mean, 50th, and 95th percentile of
 from `ddelay_summary`.
 
 ```{r ddelay_stats}
-#ddelay_summary <- flights %>% 
-# ...  
+ddelay_summary <- flights %>% 
+group_by(Destination) %>%
+  summarize(
+    count = n(),
+    mean_dep_delay = mean(DepartureDelay, na.rm = TRUE),
+    p50_dep_delay = quantile(DepartureDelay, 0.50, na.rm = TRUE),
+    p95_dep_delay = quantile(DepartureDelay, 0.95, na.rm = TRUE)
+  )
 
 head(ddelay_summary)
 tail(ddelay_summary)
@@ -160,14 +167,30 @@ tail(ddelay_summary)
 Now find the 10 carrier, destination pairs having the highest median departure delay.
 
 ```{r q32}
-
-
+ddelay_carr_dest <- flights %>% 
+  filter(!is.na(Carrier), !is.na(Destination)) %>%
+  group_by(Carrier, Destination) %>% 
+  summarize(median_delay = median(DepartureDelay)) %>% 
+  arrange(desc(median_delay))
+  
+ head(ddelay_carr_dest, 10)
 ```
 
 
 **HACKER EXTRA CREDIT** Repeat the above query but only include carrier, destination pairs having at least 25 flights. Sort descending by mean departure delay.
 
 ```{r q32_hackerxtra}
+ddelay_carr_dest_hacker <- flights %>% 
+  filter(!is.na(Carrier), !is.na(Destination)) %>%
+  group_by(Carrier, Destination) %>% 
+  summarize(median_delay = median(DepartureDelay),
+            mean_delay = mean(DepartureDelay),
+            num_flights = n()) %>%
+  filter(num_flights >= 25) %>% 
+  arrange(desc(median_delay))
+
+  head(ddelay_carr_dest_hacker, 10) %>%
+   arrange(desc(mean_delay))
 
 ```
 
@@ -187,7 +210,9 @@ and returns the integer hour associated with that time. Write the function direc
 in a code chunk in your R Markdown document.
 
 ```{r time_to_hour}
-#time.to.hour <- 
+time.to.hour <- function(t){
+  t %/% 100
+}
 
 ```
 
@@ -196,7 +221,8 @@ Then Create a new field called DepartureHour containing which is populated by us
 your function as shown below.
 
 ```{r departure_hour_soln}
-
+flights$DepartureHour <- time.to.hour(flights$DepartureTime)
+flights[,c(14,22)]
 ```
 
 
