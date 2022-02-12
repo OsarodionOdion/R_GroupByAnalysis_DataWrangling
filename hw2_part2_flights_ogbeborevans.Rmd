@@ -85,8 +85,8 @@ that you've gotten rid of the cancelled flights).
 
 ```{r remove_cancelled_flights}
 flights_actual <- filter(flights, Cancelled == 0)
-flights_actual
 flights <- flights_actual
+summary(flights)
 
 ```
 
@@ -136,7 +136,10 @@ summarize(group_by(flights, Destination), num_flights = n())
 What is mean `DepartureDelay` by `Destination`? Sort the results descending by the mean delay.
 
 ```{r mean_dep_delay_by_dest}
-summarize(group_by(flights, Destination), mean_delay = mean(DepartureDelay, na.rm = TRUE))%>%
+flights %>% 
+   filter(!is.na(Destination), !is.na(DepartureDelay)) %>%
+    group_by(Destination) %>% 
+    summarize(mean_delay = mean(DepartureDelay, na.rm = TRUE))%>%
   arrange(desc(mean_delay))
 
 ```
@@ -149,7 +152,8 @@ from `ddelay_summary`.
 
 ```{r ddelay_stats}
 ddelay_summary <- flights %>% 
-group_by(Destination) %>%
+  filter(!is.na(Destination), !is.na(DepartureDelay)) %>%
+  group_by(Destination) %>%
   summarize(
     count = n(),
     mean_dep_delay = mean(DepartureDelay, na.rm = TRUE),
@@ -222,7 +226,6 @@ your function as shown below.
 
 ```{r departure_hour_soln}
 flights$DepartureHour <- time.to.hour(flights$DepartureTime)
-flights[,c(14,22)]
 ```
 
 
@@ -245,7 +248,6 @@ flights$period <- cut(flights$DepartureHour,
                       include.lowest = TRUE,
                       labels = c("[0,5]","[6,12]","[13,18]","[19,23]"))
 str(flights$period)
-flights[,c(22,23)]
 
 ```
 
@@ -255,7 +257,7 @@ Now add a day of week field. Look into the `lubridate` library as it might be he
 
 ```{r dow}
 flights$DayOfWeek <- weekdays(flights$FlightDate)
-flights[,c("FlightDate","DayOfWeek")]
+
 ```
 
 
@@ -277,8 +279,6 @@ group_by(period) %>%
     p50_dep_delay = quantile(DepartureDelay, 0.50, na.rm = TRUE),
     p95_dep_delay = quantile(DepartureDelay, 0.95, na.rm = TRUE)
   )
-
-ddelay_by_period
 
 ```
 
