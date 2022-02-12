@@ -240,6 +240,12 @@ creating the DeparturePeriod field, makes sure you convert if to a factor it
 it's not already.
 
 ```{r departure_period}
+flights$period <- cut(flights$DepartureHour,
+                      breaks = c(0,5,12,18,23),
+                      include.lowest = TRUE,
+                      labels = c("[0,5]","[6,12]","[13,18]","[19,23]"))
+str(flights$period)
+flights[,c(22,23)]
 
 ```
 
@@ -248,7 +254,8 @@ it's not already.
 Now add a day of week field. Look into the `lubridate` library as it might be helpful.
 
 ```{r dow}
-#flights$DayOfWeek <- 
+flights$DayOfWeek <- weekdays(flights$FlightDate)
+flights[,c("FlightDate","DayOfWeek")]
 ```
 
 
@@ -262,13 +269,21 @@ do this from previous questions in this assignment. Use `dplyr`.
 
 ```{r delays_by_period_soln}
 
+  ddelay_by_period <- flights %>% 
+group_by(period) %>%
+  summarize(
+    count = n(),
+    mean_dep_delay = mean(DepartureDelay, na.rm = TRUE),
+    p50_dep_delay = quantile(DepartureDelay, 0.50, na.rm = TRUE),
+    p95_dep_delay = quantile(DepartureDelay, 0.95, na.rm = TRUE)
+  )
+
+ddelay_by_period
 
 ```
 
 
-> PUT YOUR SUMMARY COMMENTS HERE
-
-
+> From the summary stats, DepartureDelays are related to Period. Flights in the early and late hours of the day ([0,5], [19,23]) have higher delay times than other flights.
 
 
 ### Task 6: Some exploratory plots
@@ -281,8 +296,49 @@ You'd also like to create two bar charts:
 * bars representing the count of flights for each `Carrier`
 * bars representing the mean departure delay for each `Carrier`.
 
+
+```{r}
+g <- ggplot(flights)
+
+g +
+  geom_boxplot(aes(x= period, y=DepartureDelay))
+```
+
+```{r}
+g +
+  geom_violin(aes(x= period, y=DepartureDelay))
+```
+
+```{r}
+g + 
+  geom_point(aes(x=DepartureHour, y=DepartureDelay, colour=period))
+
+```
+
+
+```{r}
+  ggplot(flights) + geom_bar(aes(x=Carrier))
+```
+
+
+```{r}
+flights %>%
+  group_by(Carrier) %>%
+  summarize(mean_dep_delay = mean(DepartureDelay, na.rm = TRUE)) %>% 
+  ggplot() + geom_bar(aes(x=Carrier, y=mean_dep_delay), stat = 'identity')
+
+```
+
 **HACKER EXTRA CREDIT** In either bar chart, figure out how to sort the bars so that the largest bar is the first one, the second largest bar is the second one, and so on.
 
+
+```{r}
+flights %>%
+  group_by(Carrier) %>%
+  summarize(mean_dep_delay = mean(DepartureDelay, na.rm = TRUE)) %>% 
+  ggplot() + geom_bar(aes(reorder(Carrier,-mean_dep_delay), y=mean_dep_delay), stat = 'identity')
+
+```
 
 
 ### Task 7: Save flights to an .Rdata file
