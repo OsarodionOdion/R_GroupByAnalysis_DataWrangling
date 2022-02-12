@@ -347,10 +347,8 @@ Since you've added some new fields to `flights` save it to an Rdata file that go
 You'll be submitting this file. Name it flights_*yourlastname*.rdata. 
 
 ```{r save}
-
+saveRDS(flights, file = "data/flights_ogbeborevans.RData")
 ```
-
-
 
 
 ## Deliverables for this problem
