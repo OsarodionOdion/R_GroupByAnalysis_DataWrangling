@@ -317,7 +317,8 @@ g +
 
 
 ```{r}
-  ggplot(flights) + geom_bar(aes(x=Carrier))
+  ggplot(flights) + geom_bar(aes(x=Carrier)) +
+  coord_flip()
 ```
 
 
@@ -325,7 +326,7 @@ g +
 flights %>%
   group_by(Carrier) %>%
   summarize(mean_dep_delay = mean(DepartureDelay, na.rm = TRUE)) %>% 
-  ggplot() + geom_bar(aes(x=Carrier, y=mean_dep_delay), stat = 'identity')
+  ggplot() + geom_bar(aes(x=mean_dep_delay, y=Carrier), stat = 'identity')
 
 ```
 
@@ -336,7 +337,9 @@ flights %>%
 flights %>%
   group_by(Carrier) %>%
   summarize(mean_dep_delay = mean(DepartureDelay, na.rm = TRUE)) %>% 
-  ggplot() + geom_bar(aes(reorder(Carrier,-mean_dep_delay), y=mean_dep_delay), stat = 'identity')
+  ggplot() + geom_bar(aes(reorder(Carrier,-mean_dep_delay), y=mean_dep_delay), stat = 'identity') +
+  xlab("Carrier") +
+  coord_flip()
 
 ```
 
