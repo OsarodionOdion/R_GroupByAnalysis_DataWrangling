@@ -1,6 +1,6 @@
 ---
 title: "HW2 part 2 - EDA with R - Group by analysis"
-author: "isken"
+author: "Osarodion"
 date: "2022-01-09"
 output: html_document
 ---
